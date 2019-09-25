@@ -1,9 +1,47 @@
 import React from 'react'
-import { StyleSheet, TextInput, View, Image, ScrollView, Text, KeyboardAvoidingView, TouchableHighlight, Platform } from 'react-native'
+import { StyleSheet, TextInput, View, Image, ScrollView, Text, KeyboardAvoidingView, TouchableHighlight, Platform, AsyncStorage } from 'react-native'
+import axios from 'axios'
 
-export default class App extends React.Component {
+export default class Login extends React.Component {
+  constructor () {
+    super()
+
+    this.state = {
+      email: '',
+      password: '',
+      errors: {
+        email: '',
+        password: ''
+      }
+    }
+  }
+
+  async saveKey (name, value) {
+    try {
+      await AsyncStorage.setItem(name, value)
+    } catch (error) {
+      console.log('Error saving data' + error)
+    }
+  }
+
   onPress () {
+    axios.post('https://api.paywith.click/auth/signin/', {
+      email: this.state.email,
+      password: this.state.password
+    })
+      .then((response) => {
+        const id = response.data.data.profile.id
+        this.saveKey('token', response.data.data.token)
+        this.saveKey('id', id.toString())
+        this.saveKey('email', this.state.email)
+        this.saveKey('image', response.data.data.profile.avatar_url)
+        this.saveKey('name', response.data.data.profile.name)
 
+        this.props.navigation.navigate('ConversationList')
+      })
+      .catch((error) => {
+        console.log(error)
+      })
   }
 
   render () {
@@ -11,16 +49,27 @@ export default class App extends React.Component {
       // <ScrollView style={{flex: 1, backgroundColor: '#2187c2'}} centerContent >
       <View style={styles.container}>
         {/* <View style={styles.loginBox}> */}
-        <Image style={styles.loginIcon} source={require('./personLogin.png')} />
+        <Image style={styles.loginIcon} source={require('../../photos/personLogin.png')} />
         <Text style={styles.loginText}>LOGIN</Text>
         <KeyboardAvoidingView behavior='padding' enabled keyboardVerticalOffset='50'>
-          <TextInput style={styles.input} placeholder='Email' keyboardType='email-address' />
-          <TextInput style={styles.input} placeholder='Password' />
+          <TextInput
+            style={styles.input}
+            placeholder='Email'
+            keyboardType='email-address'
+            onChangeText={(text) => this.setState({ email: text })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder='Password'
+            textContentType='password'
+            autoCompleteType='password'
+            onChangeText={(text) => this.setState({ password: text })}
+          />
         </KeyboardAvoidingView>
 
         <TouchableHighlight
           style={styles.loginButton}
-          onPress={this.onPress()}
+          onPress={() => this.onPress()}
         >
           <Text style={{ fontSize: 20, color: 'white' }}> Login </Text>
         </TouchableHighlight>

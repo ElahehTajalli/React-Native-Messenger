@@ -1,8 +1,9 @@
 import React from 'react'
-// import axios from 'axios'
-// import { getMessageList, getConversationId, getUsername, getContactProfile } from '../../action/Conversation'
-// import moment from 'moment'
+import axios from 'axios'
+import moment from 'moment'
 import { View, Image, StyleSheet, Text } from 'react-native'
+import { getMessageList, getConversationId, getUsername, getContactProfile } from '../../action/Conversation'
+
 
 export default class Conversation extends React.Component {
   constructor () {
@@ -13,16 +14,36 @@ export default class Conversation extends React.Component {
     }
   }
 
+  onPress () {
+    this.props.dispatch(getConversationId(this.props.conversations[this.props.item].id))
+    this.props.dispatch(getUsername(this.props.name, this.props.lastName, this.props.email, this.props.image))
+    this.props.dispatch(getContactProfile(this.props.conversations[this.props.item].users[this.props.index]))
+
+    const fdata = new FormData()
+    fdata.append('token', this.state.token)
+    fdata.append('conversation_id', this.props.conversations[this.props.item].id)
+    fdata.append('size', 100)
+    fdata.append('date', (new Date().getTime() / 1000).toFixed(0))
+
+    axios.post('https://api.paywith.click/conversation/details/', fdata)
+      .then((response) => {
+        this.props.dispatch((getMessageList(response.data.data.messages)))
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
+  }
+
   render () {
     return (
-      <View style={styles.conversation}>
-        <Image source={this.props.image} alt='profileContact' style={styles.image} />
+      <View style={styles.conversation} onPress={() => this.onPress()}>
+        <Image source={{ uri: this.props.image }} alt='profileContact' style={styles.image} />
 
         <View style={styles.conversationDetailBox}>
 
           <View style={styles.nameAndDate}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{this.props.name}</Text>
-            <Text>{this.props.time}</Text>
+            {this.props.name === null || this.props.name === '' ? <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{this.props.email}</Text> : <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{this.props.name}</Text>}
+            <Text>{moment(this.props.time).add({ h: 4, m: 30 }).format('LT')}</Text>
           </View>
 
           <View style={styles.previewAndUnseen}>
