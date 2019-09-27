@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, TextInput, View, Image, ScrollView, Text, KeyboardAvoidingView, TouchableHighlight, Platform, AsyncStorage } from 'react-native'
+import { StyleSheet, TextInput, View, Image, Text, KeyboardAvoidingView, TouchableHighlight, AsyncStorage } from 'react-native'
 import axios from 'axios'
 
 export default class Login extends React.Component {
@@ -47,11 +47,11 @@ export default class Login extends React.Component {
   render () {
     return (
       // <ScrollView style={{flex: 1, backgroundColor: '#2187c2'}} centerContent >
-      <View style={styles.container}>
-        {/* <View style={styles.loginBox}> */}
-        <Image style={styles.loginIcon} source={require('../../photos/personLogin.png')} />
-        <Text style={styles.loginText}>LOGIN</Text>
-        <KeyboardAvoidingView behavior='padding' enabled keyboardVerticalOffset='50'>
+      <KeyboardAvoidingView behavior='padding' enabled style={{ flex: 1 }}>
+        <View style={styles.container}>
+          {/* <View style={styles.loginBox}> */}
+          <Image style={styles.loginIcon} source={require('../../photos/personLogin.png')} />
+          <Text style={styles.loginText}>LOGIN</Text>
           <TextInput
             style={styles.input}
             placeholder='Email'
@@ -62,21 +62,21 @@ export default class Login extends React.Component {
             style={styles.input}
             placeholder='Password'
             textContentType='password'
-            autoCompleteType='password'
+            secureTextEntry
             onChangeText={(text) => this.setState({ password: text })}
           />
-        </KeyboardAvoidingView>
 
-        <TouchableHighlight
-          style={styles.loginButton}
-          onPress={() => this.onPress()}
-        >
-          <Text style={{ fontSize: 20, color: 'white' }}> Login </Text>
-        </TouchableHighlight>
+          <TouchableHighlight
+            style={styles.loginButton}
+            onPress={() => this.onPress()}
+          >
+            <Text style={{ fontSize: 20, color: 'white' }}> Login </Text>
+          </TouchableHighlight>
 
-        {/* </View> */}
+          {/* </View> */}
 
-      </View>
+        </View>
+      </KeyboardAvoidingView>
       //  </ScrollView>
     )
   }
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#2187c2',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   // loginBox: {
   //   backgroundColor: '#2187c2',
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 5,
     backgroundColor: 'white',
-    borderColor: '#02497cde',
+    borderColor: '#02497cde'
   },
   loginText: {
     // alignSelf: 'center',

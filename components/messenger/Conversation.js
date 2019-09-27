@@ -1,16 +1,24 @@
 import React from 'react'
 import axios from 'axios'
 import moment from 'moment'
-import { View, Image, StyleSheet, Text } from 'react-native'
+import { View, Image, StyleSheet, Text, AsyncStorage, TouchableHighlight } from 'react-native'
 import { getMessageList, getConversationId, getUsername, getContactProfile } from '../../action/Conversation'
-
 
 export default class Conversation extends React.Component {
   constructor () {
     super()
 
     this.state = {
-    //   token: window.localStorage.getItem('token')
+      token: ''
+    }
+  }
+
+  async componentDidMount () {
+    try {
+      const value = await AsyncStorage.getItem('token')
+      this.setState({ token: value })
+    } catch (error) {
+      console.log('Error retrieving data' + error)
     }
   }
 
@@ -28,32 +36,35 @@ export default class Conversation extends React.Component {
     axios.post('https://api.paywith.click/conversation/details/', fdata)
       .then((response) => {
         this.props.dispatch((getMessageList(response.data.data.messages)))
+        this.props.navigation.navigate('ChatScreen')
       })
-      .catch(function (error) {
-        console.log(error)
+      .catch((error) => {
+        console.log('err', error)
       })
   }
 
   render () {
     return (
-      <View style={styles.conversation} onPress={() => this.onPress()}>
-        <Image source={{ uri: this.props.image }} alt='profileContact' style={styles.image} />
+      <TouchableHighlight style={styles.conversation} onPress={() => this.onPress()}>
+        <>
+          <Image source={{ uri: this.props.image }} alt='profileContact' style={styles.image} />
 
-        <View style={styles.conversationDetailBox}>
+          <View style={styles.conversationDetailBox}>
 
-          <View style={styles.nameAndDate}>
-            {this.props.name === null || this.props.name === '' ? <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{this.props.email}</Text> : <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{this.props.name}</Text>}
-            <Text>{moment(this.props.time).add({ h: 4, m: 30 }).format('LT')}</Text>
+            <View style={styles.nameAndDate}>
+              {this.props.name === null || this.props.name === '' ? <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{this.props.email}</Text> : <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{this.props.name}</Text>}
+              <Text>{moment(this.props.time).add({ h: 3, m: 30 }).format('LT')}</Text>
+            </View>
+
+            <View style={styles.previewAndUnseen}>
+              <Text style={styles.preview}>{this.props.preview}</Text>
+              {this.props.unseen !== 0 &&
+                <Text style={styles.unseen}>{this.props.unseen}</Text>}
+            </View>
+
           </View>
-
-          <View style={styles.previewAndUnseen}>
-            <Text style={styles.preview}>{this.props.preview}</Text>
-            {this.props.unseen !== 0 &&
-              <Text style={styles.unseen}>{this.props.unseen}</Text>}
-          </View>
-
-        </View>
-      </View>
+        </>
+      </TouchableHighlight>
     )
   }
 }
@@ -64,7 +75,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingRight: 15,
     flexDirection: 'row',
-    justifyContent: 'flex-start', 
+    justifyContent: 'flex-start',
     alignItems: 'center'
   },
   conversationDetailBox: {

@@ -1,8 +1,6 @@
 import React from 'react'
 import { StyleSheet, View, Text, ScrollView, TouchableHighlight, TextInput, Modal, AsyncStorage } from 'react-native'
-import { Icon, Item, Label } from 'native-base'
-// import ContactImage from '../../photos/5337490ca1097befda8a3a81e0b77af4.jpg'
-// import ContactImage1 from '../../photos/1494085820_norbert-therapy-dog-cute.jpg'
+import { Icon, Item, Label, Input } from 'native-base'
 import ConversationContainer from '../../container/ConversationContainer'
 import axios from 'axios'
 import { conversations } from '../../action/Conversation'
@@ -11,20 +9,27 @@ export default class ConversationList extends React.Component {
   constructor () {
     super()
     this.state = {
-      modalVisible: false
+      modalVisible: false,
+      id: '',
+      text: '',
+      token: '',
+      users: [],
+      user: '',
+      newContactEmail: ''
     }
   }
 
   async componentDidMount () {
     try {
-      const value = await AsyncStorage.getItem('token')
+      const value = await AsyncStorage.multiGet(['token', 'id'])
+      this.setState({ id: value[1][1] })
+      this.setState({ token: value[0][1] })
       axios.get('https://api.paywith.click/conversation/', {
         params: {
-          token: value
+          token: value[0][1]
         }
       })
         .then((response) => {
-          // console.log(response.data.data.conversation_details)
           this.props.dispatch(conversations(response.data.data.conversation_details))
         })
         .catch((error) => {
@@ -35,21 +40,43 @@ export default class ConversationList extends React.Component {
     }
   }
 
-  // async getKey () {
-  //   try {
-  //     const value = await AsyncStorage.getItem('token')
-  //     console.log('getKey', value)
-  //     return value
-  //   } catch (error) {
-  //     console.log("Error retrieving data" + error)
-  //   }
-  // }
-
-  onPress () {
+  setModalVisible (visible) {
+    this.setState({ newContactEmail: '', modalVisible: visible, users: [] })
   }
 
-  setModalVisible (visible) {
-    this.setState({ modalVisible: visible })
+  addContact (visible) {
+    this.setModalVisible(visible)
+    const fdata = new FormData()
+    fdata.append('token', this.state.token)
+    fdata.append('user_id', this.state.user.id)
+
+    axios.post('https://api.paywith.click/conversation/', fdata)
+      .then((response) => {
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
+  }
+
+  handleSearch (text) {
+    this.setState({ text, newContactEmail: text })
+    const fdata = new FormData()
+    fdata.append('token', this.state.token)
+    fdata.append('query', text)
+    fdata.append('size', 4)
+
+    axios.post('https://api.paywith.click/explore/search/contacts/', fdata)
+      .then((response) => {
+        this.setState({ users: response.data.data.users })
+      })
+      .catch((error) => {
+        console.log(error.response.data)
+        this.setState({ users: [] })
+      })
+  }
+
+  selectContact (user) {
+    this.setState({ users: [], newContactEmail: user.email, user })
   }
 
   render () {
@@ -79,24 +106,24 @@ export default class ConversationList extends React.Component {
           {Object.values(this.props.conversations).map((item, index) => {
             let contactIndex = 0
             Object.values(item.users).map((item, index) => {
-              if (item.id !== 222) {
+              if (item.id !== parseInt(this.state.id)) {
                 contactIndex = index
               }
             })
             return (
-              <TouchableHighlight key={index} onPress={() => this.onPress()}>
-                <ConversationContainer
-                  key={index}
-                  image={item.users[contactIndex].avatar_url}
-                  name={item.users[contactIndex].name}
-                  lastName=''
-                  time={item.latest_message_date}
-                  email={item.users[contactIndex].email}
-                  preview={item.preview}
-                  // unseen={item.unseen_messages[window.localStorage.getItem('id')]}
-                  unseen='2'
-                />
-              </TouchableHighlight>
+              <ConversationContainer
+                key={index}
+                image={item.users[contactIndex].avatar_url}
+                name={item.users[contactIndex].name}
+                lastName=''
+                time={item.latest_message_date}
+                email={item.users[contactIndex].email}
+                preview={item.preview}
+                unseen={item.unseen_messages[parseInt(this.state.id)]}
+                item={index}
+                index={contactIndex}
+                navigation={this.props.navigation}
+              />
             )
           })}
         </ScrollView>
@@ -118,11 +145,22 @@ export default class ConversationList extends React.Component {
               <Text style={styles.subjectModal}>Add Contact</Text>
               <Item floatingLabel style={{ borderBottomColor: 'black', width: 200 }}>
                 <Label>Email</Label>
+                <Input onChangeText={(text) => this.handleSearch(text)} value={this.state.newContactEmail} />
               </Item>
+              <View>
+                {this.state.users.map((user, index) => {
+                  return (
+                    <TouchableHighlight key={user.id} onPress={() => this.selectContact(user)}>
+                      <Text>{user.email}</Text>
+                    </TouchableHighlight>
+
+                  )
+                })}
+              </View>
 
               <TouchableHighlight
                 onPress={() => {
-                  this.setModalVisible(!this.state.modalVisible)
+                  this.addContact(!this.state.modalVisible)
                 }}
               >
                 <Text style={styles.addButton}>Add</Text>

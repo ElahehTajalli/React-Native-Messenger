@@ -3,6 +3,7 @@ import { createAppContainer } from 'react-navigation'
 import { createStackNavigator } from 'react-navigation-stack'
 import Login from './components/auth/Login'
 import ConversationListContainer from './container/ConversationListContainer'
+import ChatScreenContainer from './container/ChatScreenContainer'
 import { Provider } from 'react-redux'
 import { applyMiddleware, createStore } from 'redux'
 import conversation from './reducer/Conversation'
@@ -26,10 +27,12 @@ const MainNavigator = createStackNavigator({
   },
   ConversationList: {
     screen: ConversationListContainer
+  },
+  ChatScreen: {
+    screen: ChatScreenContainer
   }
-  // ChatScreen: { screen: ChatScreen }
 }, {
-  initialRouteName: 'Login',
+  initialRouteName: 'ConversationList',
   defaultNavigationOptions: {
     header: null
   }
