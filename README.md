@@ -2,8 +2,8 @@
 Simple React Native Messenger
 <br />
 <br />
-<img src="images/photo_2019-09-24_21-33-44.jpg" width=200 height=400 />
-<img src="images/photo_2019-09-24_21-33-45.jpg" width=200 height=400 />
+<img src="images/photo_2019-09-24_21-33-44.jpg" width=220 height=400 />
+<img src="images/photo_2019-09-24_21-33-45.jpg" width=220 height=400 />
 <img src="images/photo_2019-09-30_13-52-54.jpg" width=200 height=400 />
 <img src="images/photo_2019-09-30_15-35-12.jpg" width=200 height=400 />
 
